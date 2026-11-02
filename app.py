@@ -4,88 +4,117 @@ from PIL import Image, ImageDraw, ImageFont
 
 # Konfigurasi halaman Streamlit
 st.set_page_config(
-    page_title="ID Card Generator - PT Samudera Mulia Abadi",
-    page_icon="🪪",
-    layout="centered",
+    page_title="Mine Permit Generator", page_icon="🪪", layout="centered"
 )
 
-st.title("🪪 Generator & Editor ID Card")
-st.write(
-    "Masukkan data di bawah untuk menghasilkan ID Card secara otomatis dan presisi."
-)
+st.title("🪪 Generator Mine Permit (Depan & Belakang)")
+st.write("Masukkan data karyawan, lalu pilih sisi kartu yang ingin diunduh.")
 
-# Sidebar untuk Input Data
+# Sidebar untuk Input Data & Pilihan Sisi Kartu
 with st.sidebar:
-    st.header("1. Input Data Karyawan")
-    nama = st.text_input("Nama Lengkap", "M. Noviar Zulfikri")
-    jabatan = st.text_input("Jabatan", "IT Support")
-    nik = st.text_input("NIK / ID", "SMO-2021-001")
+  st.header("1. Pilih Tampilan")
+  sisi_pilihan = st.radio(
+      "Tampilkan Sisi:", ("Sisi Depan", "Sisi Belakang", "Tampilkan Keduanya")
+  )
 
-    st.header("2. Upload Foto")
-    uploaded_photo = st.file_uploader(
-        "Pilih Foto (JPG/PNG)", type=["jpg", "jpeg", "png"]
-    )
+  st.header("2. Input Data Karyawan")
+  nama = st.text_input("Nama Lengkap", "Maikel Pandori")
+  jabatan = st.text_input("Jabatan / Role", "DRIVER")
+  nik = st.text_input("NIP / No. Induk", "MN-PTBSA 0002")
 
-
-# Fungsi untuk memproses pembuatan ID Card
-def generate_id_card(nama, jabatan, nik, photo_file):
-    # Load template.png yang sudah Anda siapkan
-    try:
-        base_image = Image.open("template.png").convert("RGBA")
-    except FileNotFoundError:
-        # Cadangan jika file template.png belum terbaca
-        base_image = Image.new("RGBA", (1012, 638), (240, 240, 240, 255))
-
-    draw = ImageDraw.Draw(base_image)
-
-    # Konfigurasi Font (Menggunakan default PIL atau kustom ttf jika ada)
-    try:
-        font_nama = ImageFont.truetype("arial.ttf", 36)
-        font_detail = ImageFont.truetype("arial.ttf", 24)
-    except IOError:
-        font_nama = ImageFont.load_default()
-        font_detail = ImageFont.load_default()
-
-    # 1. Tempel & Ukur Foto (Sesuaikan ukuran dan koordinat x, y)
-    if photo_file is not None:
-        photo = Image.open(photo_file).convert("RGBA")
-        photo_size = (200, 200)  # Sesuaikan ukuran kotak foto di template
-        photo = photo.resize(photo_size, Image.Resampling.LANCZOS)
-
-        # Koordinat posisi foto (x, y)
-        photo_position = (100, 180)
-        base_image.paste(photo, photo_position, photo)
-
-    # 2. Tulis Teks ke Template (Sesuaikan koordinat x, y untuk teks)
-    text_color = (30, 30, 30)  # Warna teks RGB (Hitam/Gelap)
-
-    draw.text((350, 200), f"Nama: {nama}", fill=text_color, font=font_nama)
-    draw.text((350, 260), f"Jabatan: {jabatan}", fill=text_color, font=font_detail)
-    draw.text((350, 310), f"NIK: {nik}", fill=text_color, font=font_detail)
-
-    return base_image
+  st.header("3. Upload Foto")
+  uploaded_photo = st.file_uploader(
+      "Pilih Foto (JPG/PNG)", type=["jpg", "jpeg", "png"]
+  )
 
 
-# Proses Preview di Halaman Utama
-st.subheader("Preview ID Card")
+# Fungsi untuk memproses Sisi Depan
+def generate_sisi_depan(nama, jabatan, nik, photo_file):
+  try:
+    base_image = Image.open("template_depan.png").convert("RGBA")
+  except FileNotFoundError:
+    base_image = Image.new("RGBA", (1012, 638), (240, 240, 240, 255))
 
-# Jalankan fungsi generator
-final_card = generate_id_card(nama, jabatan, nik, uploaded_photo)
+  draw = ImageDraw.Draw(base_image)
 
-# Tampilkan gambar hasil pratinjau di Streamlit
-st.image(
-    final_card, caption="Hasil Pratinjau ID Card", use_container_width=True
-)
+  # Konfigurasi Font
+  try:
+    font_nama = ImageFont.truetype("arial.ttf", 32)
+    font_detail = ImageFont.truetype("arial.ttf", 22)
+  except IOError:
+    font_nama = ImageFont.load_default()
+    font_detail = ImageFont.load_default()
 
-# Konversi gambar ke format bytes untuk tombol unduh
-buffered = io.BytesIO()
-final_card.convert("RGB").save(buffered, format="PNG")
-img_bytes = buffered.getvalue()
+  text_color = (0, 0, 0)
 
-# Tombol Unduh
-st.download_button(
-    label="📥 Unduh ID Card (PNG)",
-    data=img_bytes,
-    file_name=f"ID_Card_{nik}.png",
-    mime="image/png",
-)
+  # 1. Tempel Foto (Sesuaikan koordinat x, y dan ukuran kotak foto)
+  if photo_file is not None:
+    photo = Image.open(photo_file).convert("RGBA")
+    photo_size = (180, 220)  # Sesuaikan ukuran foto
+    photo = photo.resize(photo_size, Image.Resampling.LANCZOS)
+    photo_position = (265, 375)  # Sesuaikan titik koordinat (x, y) foto
+    base_image.paste(photo, photo_position, photo)
+
+  # 2. Tulis Teks ke Sisi Depan (Sesuaikan koordinat x, y teks)
+  draw.text((265, 620), f"{nama}", fill=text_color, font=font_nama)
+  draw.text((265, 675), f"{nik}", fill=text_color, font=font_detail)
+  draw.text((265, 710), f"{jabatan}", fill=text_color, font=font_detail)
+
+  return base_image
+
+
+# Fungsi untuk memproses Sisi Belakang
+def generate_sisi_belakang():
+  try:
+    base_image = Image.open("template_belakang.png").convert("RGBA")
+  except FileNotFoundError:
+    base_image = Image.new("RGBA", (1012, 638), (240, 240, 240, 255))
+  return base_image
+
+
+# --- TAMPILAN UTAMA APLIKASI ---
+st.subheader("Pratinjau Mine Permit")
+
+if sisi_pilihan == "Sisi Depan":
+  final_card = generate_sisi_depan(nama, jabatan, nik, uploaded_photo)
+  st.image(
+      final_card, caption="Mine Permit - Sisi Depan", use_container_width=True
+  )
+
+  buffered = io.BytesIO()
+  final_card.convert("RGB").save(buffered, format="PNG")
+  st.download_button(
+      label="📥 Unduh Sisi Depan (PNG)",
+      data=buffered.getvalue(),
+      file_name=f"MinePermit_Depan_{nik}.png",
+      mime="image/png",
+  )
+
+elif sisi_pilihan == "Sisi Belakang":
+  final_card = generate_sisi_belakang()
+  st.image(
+      final_card, caption="Mine Permit - Sisi Belakang", use_container_width=True
+  )
+
+  buffered = io.BytesIO()
+  final_card.convert("RGB").save(buffered, format="PNG")
+  st.download_button(
+      label="📥 Unduh Sisi Belakang (PNG)",
+      data=buffered.getvalue(),
+      file_name="MinePermit_Belakang.png",
+      mime="image/png",
+  )
+
+else:
+  # Tampilkan Keduanya Sekaligus
+  card_depan = generate_sisi_depan(nama, jabatan, nik, uploaded_photo)
+  card_belakang = generate_sisi_belakang()
+
+  st.image(
+      card_depan, caption="Mine Permit - Sisi Depan", use_container_width=True
+  )
+  st.image(
+      card_belakang,
+      caption="Mine Permit - Sisi Belakang",
+      use_container_width=True,
+  )
