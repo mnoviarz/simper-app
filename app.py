@@ -9,7 +9,8 @@ st.set_page_config(
 
 st.title("🪪 Generator Mine Permit (Sisi Depan)")
 st.write(
-    "Masukkan data karyawan di bawah ini. Ukuran font dan posisi telah disesuaikan."
+    "Masukkan data karyawan di bawah ini. Tata letak disesuaikan persis dengan"
+    " contoh."
 )
 
 # Sidebar untuk Input Data
@@ -35,20 +36,18 @@ def generate_sisi_depan(
   try:
     base_image = Image.open("template_depan.png").convert("RGBA")
   except FileNotFoundError:
-    base_image = Image.new("RGBA", (1200, 1700), (255, 255, 255, 255))
-
-  # Ambil ukuran asli gambar template agar dinamis
-  img_width, img_height = base_image.size
+    # Cadangan jika file belum terbaca
+    base_image = Image.new("RGBA", (850, 1200), (255, 255, 255, 255))
 
   draw = ImageDraw.Draw(base_image)
 
-  # Konfigurasi Font dengan ukuran yang jauh lebih besar (disesuaikan untuk template beresolusi tinggi)
+  # Konfigurasi Font yang disesuaikan dengan proporsi contoh
   try:
-    font_nama = ImageFont.truetype("arial.ttf", 75)
-    font_detail = ImageFont.truetype("arial.ttf", 50)
-    font_box = ImageFont.truetype("arial.ttf", 110)
-    font_izin = ImageFont.truetype("arial.ttf", 60)
-    font_expired = ImageFont.truetype("arial.ttf", 45)
+    font_nama = ImageFont.truetype("arial.ttf", 45)
+    font_detail = ImageFont.truetype("arial.ttf", 32)
+    font_box = ImageFont.truetype("arial.ttf", 75)
+    font_izin = ImageFont.truetype("arial.ttf", 40)
+    font_expired = ImageFont.truetype("arial.ttf", 26)
   except IOError:
     font_nama = ImageFont.load_default()
     font_detail = ImageFont.load_default()
@@ -60,35 +59,30 @@ def generate_sisi_depan(
   text_color_yellow = (210, 155, 20)  # Warna kuning untuk izin alat
   text_color_white = (255, 255, 255)  # Warna putih untuk expired
 
-  # 1. Tempel Foto Karyawan (Sesuaikan ukuran dan koordinat X, Y)
+  # 1. Tempel Foto Karyawan (Sesuai posisi di bawah header sebelah kiri)
   if photo_file is not None:
     photo = Image.open(photo_file).convert("RGBA")
-    photo_size = (
-        420,
-        520,
-    )  # Ukuran kotak foto diperbesar menyesuaikan template
+    photo_size = (260, 320)  # Ukuran foto
     photo = photo.resize(photo_size, Image.Resampling.LANCZOS)
-    photo_position = (200, 240)  # Posisi (X, Y) foto
+    photo_position = (160, 160)  # Posisi koordinat (X, Y) foto
     base_image.paste(photo, photo_position, photo)
 
-  # 2. Tulis Teks Identitas (Nama, NIK, Jabatan) di sebelah kiri bawah foto
-  draw.text((100, 800), f"{nama}", fill=text_color_dark, font=font_nama)
-  draw.text((100, 895), f"{nik}", fill=text_color_dark, font=font_detail)
-  draw.text((100, 960), f"{jabatan}", fill=text_color_dark, font=font_detail)
+  # 2. Tulis Teks Identitas (Nama, NIK, Jabatan) di bawah foto sebelah kiri
+  draw.text((60, 500), f"{nama}", fill=text_color_dark, font=font_nama)
+  draw.text((60, 560), f"{nik}", fill=text_color_dark, font=font_detail)
+  draw.text((60, 605), f"{jabatan}", fill=text_color_dark, font=font_detail)
 
   # 3. Tulis Kode Lokasi Alat di Kotak Sebelah Kanan (Contoh: AB)
-  draw.text(
-      (880, 820), f"{lokasi_alat}", fill=text_color_dark, font=font_box
-  )
+  draw.text((580, 530), f"{lokasi_alat}", fill=text_color_dark, font=font_box)
 
   # 4. Tulis Keterangan Izin Alat di Dalam Kotak Panjang Tengah
   draw.text(
-      (360, 1145), f"{izin_alat}", fill=text_color_yellow, font=font_izin
+      (260, 715), f"{izin_alat}", fill=text_color_yellow, font=font_izin
   )
 
-  # 5. Tulis Tanggal Expired di Bagian Bawah Area Hijau (Digeser ke kanan sedikit agar tidak terpotong)
+  # 5. Tulis Tanggal Expired di Bagian Bawah Area Hijau
   draw.text(
-      (150, 1610),
+      (90, 1135),
       f"Expired : {expired_date}",
       fill=text_color_white,
       font=font_expired,
