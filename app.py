@@ -45,18 +45,17 @@ def generate_sisi_depan(
 
   draw = ImageDraw.Draw(base_image)
 
-  # Konfigurasi Font (Nama dibuat lebih besar & tebal menggunakan arialbd.ttf)
+  # Mengatur Font dengan aman (Menggunakan font default PIL jika file .ttf tidak ada di Linux)
   try:
-    font_nama = ImageFont.truetype(
-        "arialbd.ttf", 55
-    )  # Ukuran diperbesar dan tebal (Bold)
+    # Coba gunakan font sistem jika Anda sudah mengunggah file .ttf ke GitHub
+    font_nama = ImageFont.truetype("arialbd.ttf", 55)
     font_detail = ImageFont.truetype("arial.ttf", 30)
     font_box = ImageFont.truetype("arial.ttf", 65)
     font_izin = ImageFont.truetype("arial.ttf", 45)
     font_expired = ImageFont.truetype("arial.ttf", 26)
   except IOError:
-    # Fallback jika file bold tidak ditemukan
-    font_nama = ImageFont.truetype("arial.ttf", 55)
+    # Fallback otomatis ke font bawaan PIL agar tidak pernah error di Streamlit Cloud
+    font_nama = ImageFont.load_default()
     font_detail = ImageFont.load_default()
     font_box = ImageFont.load_default()
     font_izin = ImageFont.load_default()
