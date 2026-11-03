@@ -1,4 +1,6 @@
 import io
+import zipfile
+import pandas as pd
 import streamlit as st
 from PIL import Image, ImageDraw, ImageFont
 
@@ -9,32 +11,27 @@ st.set_page_config(
 
 st.title("🪪 Generator Mine Permit (Depan & Belakang)")
 st.write(
-    "Masukkan data karyawan di bawah ini, lalu pilih sisi kartu yang ingin"
-    " ditampilkan atau diunduh."
+    "Pilih mode penginputan data di sidebar: secara satuan atau massal via"
+    " Excel/CSV."
 )
 
-# Sidebar untuk Input Data & Pilihan Sisi Kartu
+# Sidebar untuk Mode Input & Pengaturan
 with st.sidebar:
-  st.header("1. Pilih Tampilan")
+  st.header("1. Pilih Mode Pembuatan")
+  mode = st.radio("Mode:", ("Input Satuan", "Input Massal (Excel/CSV)"))
+
+  st.header("2. Pilih Tampilan Sisi")
   sisi_pilihan = st.radio(
       "Tampilkan Sisi:", ("Sisi Depan", "Sisi Belakang", "Tampilkan Keduanya")
   )
 
-  st.header("2. Input Data Karyawan")
-  nama = st.text_input("Nama Lengkap", "Maikel Pandori")
-  nik = st.text_input("NIP / No. Induk", "MN-PTBSA 0002")
-  jabatan = st.text_input("Jabatan / Role", "DRIVER")
-  lokasi_alat = st.text_input("Lokasi Op. Alat (SIMPER)", "AB")
-  izin_alat = st.text_input("Izin Op. Alat", "Light Vehicle ( LV )")
-  expired_date = st.text_input("Masa Berlaku (Expired)", "19 Oktober 2027")
-
-  st.header("3. Upload Foto")
+  st.header("3. Upload Foto Utama")
   uploaded_photo = st.file_uploader(
       "Pilih Foto (JPG/PNG)", type=["jpg", "jpeg", "png"]
   )
 
 
-# Fungsi untuk memproses Sisi Depan
+# Fungsi untuk memproses Sisi Depan (Menggunakan koordinat stabil Anda)
 def generate_sisi_depan(
     nama, nik, jabatan, lokasi_alat, izin_alat, expired_date, photo_file
 ):
@@ -45,15 +42,13 @@ def generate_sisi_depan(
 
   draw = ImageDraw.Draw(base_image)
 
-  # Mengatur Font dengan aman (Menggunakan font default PIL jika file .ttf tidak ada di Linux)
-# Konfigurasi Font secara aman per baris agar tidak saling memengaruhi error
+  # Konfigurasi Font secara aman per baris
   try:
     font_nama = ImageFont.truetype("arial_narrow_7.ttf", 55)
   except IOError:
     font_nama = ImageFont.load_default()
 
   try:
-    # Jika font detail lain belum ada, gunakan font_narrow atau load_default khusus bagian itu
     font_detail = ImageFont.truetype("arial_narrow_7.ttf", 30)
     font_box = ImageFont.truetype("arial_narrow_7.ttf", 55)
     font_izin = ImageFont.truetype("arial_narrow_7.ttf", 30)
@@ -70,13 +65,16 @@ def generate_sisi_depan(
   text_color_green = (35, 115, 110)
 
   if photo_file is not None:
-    photo = Image.open(photo_file).convert("RGBA")
-    photo_size = (250, 300)
-    photo = photo.resize(photo_size, Image.Resampling.LANCZOS)
-    photo_position = (100, 200)
-    base_image.paste(photo, photo_position, photo)
+    try:
+      photo = Image.open(photo_file).convert("RGBA")
+      photo_size = (250, 300)
+      photo = photo.resize(photo_size, Image.Resampling.LANCZOS)
+      photo_position = (100, 200)
+      base_image.paste(photo, photo_position, photo)
+    except Exception:
+      pass
 
-  # Tulis Teks Identitas
+  # Tulis Teks Identitas (Koordinat Sesuai Pilihan Anda)
   draw.text((50, 500), f"{nama}", fill=text_color_dark, font=font_nama)
   draw.text((50, 570), f"{nik}", fill=text_color_dark, font=font_detail)
   draw.text((50, 615), f"{jabatan}", fill=text_color_dark, font=font_detail)
@@ -105,54 +103,169 @@ def generate_sisi_belakang():
   return base_image
 
 
-# --- TAMPILAN UTAMA APLIKASI ---
-st.subheader("Pratinjau Mine Permit")
+# --- LOGIKA UTAMA APLIKASI ---
 
-if sisi_pilihan == "Sisi Depan":
-  final_card = generate_sisi_depan(
-      nama, nik, jabatan, lokasi_alat, izin_alat, expired_date, uploaded_photo
-  )
-  st.image(
-      final_card, caption="Pratinjau Mine Permit (Depan)", use_container_width=True
-  )
+if mode == "Input Satuan":
+  st.subheader("Form Input Data Satuan")
+  col1, col2 = st.columns(2)
+  with col1:
+    nama = st.text_input("Nama Lengkap", "Maikel Pandori")
+    nik = st.text_input("NIP / No. Induk", "MN-PTBSA 0002")
+    jabatan = st.text_input("Jabatan / Role", "DRIVER")
+  with col2:
+    lokasi_alat = st.text_input("Lokasi Op. Alat (SIMPER)", "AB")
+    izin_alat = st.text_input("Izin Op. Alat", "Light Vehicle ( LV )")
+    expired_date = st.text_input("Masa Berlaku (Expired)", "19 Oktober 2027")
 
-  buffered = io.BytesIO()
-  final_card.convert("RGB").save(buffered, format="PNG")
-  st.download_button(
-      label="📥 Unduh Sisi Depan (PNG)",
-      data=buffered.getvalue(),
-      file_name=f"MinePermit_Depan_{nik}.png",
-      mime="image/png",
-  )
+  st.subheader("Pratinjau Mine Permit")
 
-elif sisi_pilihan == "Sisi Belakang":
-  final_card = generate_sisi_belakang()
-  st.image(
-      final_card,
-      caption="Pratinjau Mine Permit (Belakang)",
-      use_container_width=True,
-  )
+  if sisi_pilihan == "Sisi Depan":
+    final_card = generate_sisi_depan(
+        nama,
+        nik,
+        jabatan,
+        lokasi_alat,
+        izin_alat,
+        expired_date,
+        uploaded_photo,
+    )
+    st.image(
+        final_card, caption="Pratinjau Mine Permit (Depan)", use_container_width=True
+    )
 
-  buffered = io.BytesIO()
-  final_card.convert("RGB").save(buffered, format="PNG")
-  st.download_button(
-      label="📥 Unduh Sisi Belakang (PNG)",
-      data=buffered.getvalue(),
-      file_name="MinePermit_Belakang.png",
-      mime="image/png",
-  )
+    buffered = io.BytesIO()
+    final_card.convert("RGB").save(buffered, format="PNG")
+    st.download_button(
+        label="📥 Unduh Sisi Depan (PNG)",
+        data=buffered.getvalue(),
+        file_name=f"MinePermit_Depan_{nik}.png",
+        mime="image/png",
+    )
+
+  elif sisi_pilihan == "Sisi Belakang":
+    final_card = generate_sisi_belakang()
+    st.image(
+        final_card,
+        caption="Pratinjau Mine Permit (Belakang)",
+        use_container_width=True,
+    )
+
+    buffered = io.BytesIO()
+    final_card.convert("RGB").save(buffered, format="PNG")
+    st.download_button(
+        label="📥 Unduh Sisi Belakang (PNG)",
+        data=buffered.getvalue(),
+        file_name="MinePermit_Belakang.png",
+        mime="application/octet-stream",
+    )
+
+  else:
+    card_depan = generate_sisi_depan(
+        nama,
+        nik,
+        jabatan,
+        lokasi_alat,
+        izin_alat,
+        expired_date,
+        uploaded_photo,
+    )
+    card_belakang = generate_sisi_belakang()
+
+    st.image(
+        card_depan, caption="Pratinjau Mine Permit (Depan)", use_container_width=True
+    )
+    st.image(
+        card_belakang,
+        caption="Pratinjau Mine Permit (Belakang)",
+        use_container_width=True,
+    )
 
 else:
-  card_depan = generate_sisi_depan(
-      nama, nik, jabatan, lokasi_alat, izin_alat, expired_date, uploaded_photo
+  st.subheader("📁 Generator Batch / Massal via File Excel/CSV")
+  st.write(
+      "Unggah file Excel (`.xlsx`) atau CSV berisi data karyawan untuk"
+      " digenerate secara otomatis."
   )
-  card_belakang = generate_sisi_belakang()
 
-  st.image(
-      card_depan, caption="Pratinjau Mine Permit (Depan)", use_container_width=True
+  with st.expander("💡 Contoh Format Kolom yang Dibutuhkan"):
+    sample_df = pd.DataFrame({
+        "Nama": ["Maikel Pandori", "Amon Rouw"],
+        "NIK": ["MN-PTBSA 0002", "MN-PTBSA 0005"],
+        "Jabatan": ["DRIVER", "FOREMAN"],
+        "Lokasi_Alat": ["AB", "A"],
+        "Izin_Alat": ["Light Vehicle ( LV )", "Dump Truck"],
+        "Expired": ["19 Oktober 2027", "20 Desember 2027"],
+    })
+    st.dataframe(sample_df)
+
+  uploaded_file = st.file_uploader(
+      "Upload File Data (Excel/CSV)", type=["xlsx", "csv"]
   )
-  st.image(
-      card_belakang,
-      caption="Pratinjau Mine Permit (Belakang)",
-      use_container_width=True,
-  )
+
+  if uploaded_file is not None:
+    try:
+      if uploaded_file.name.endswith(".csv"):
+        df = pd.read_csv(uploaded_file)
+      else:
+        df = pd.read_excel(uploaded_file)
+
+      st.success(
+          f"Berhasil memuat {len(df)} data karyawan dari file."
+      )
+      st.dataframe(df.head())
+
+      if st.button("🚀 Proses & Generate Semua Kartu (ZIP)"):
+        zip_buffer = io.BytesIO()
+        with zipfile.ZipFile(
+            zip_buffer, "w", zipfile.ZIP_DEFLATED
+        ) as zip_file:
+          for index, row in df.iterrows():
+            p_nama = str(row.get("Nama", ""))
+            p_nik = str(row.get("NIK", ""))
+            p_jabatan = str(row.get("Jabatan", ""))
+            p_lokasi = str(row.get("Lokasi_Alat", ""))
+            p_izin = str(row.get("Izin_Alat", ""))
+            p_expired = str(row.get("Expired", ""))
+
+            # Buat Sisi Depan
+            card_d = generate_sisi_depan(
+                p_nama,
+                p_nik,
+                p_jabatan,
+                p_lokasi,
+                p_izin,
+                p_expired,
+                uploaded_photo,
+            )
+            img_io_d = io.BytesIO()
+            card_d.convert("RGB").save(img_io_d, format="PNG")
+            zip_file.writestr(
+                f"MinePermit_Depan_{p_nik.replace(' ', '_')}.png",
+                img_io_d.getvalue(),
+            )
+
+            # Buat Sisi Belakang
+            card_b = generate_sisi_belakang()
+            img_io_b = io.BytesIO()
+            card_b.convert("RGB").save(img_io_b, format="PNG")
+            zip_file.writestr(
+                f"MinePermit_Belakang_{p_nik.replace(' ', '_')}.png",
+                img_io_b.getvalue(),
+            )
+
+        zip_buffer.seek(0)
+        st.success(
+            "Semua kartu berhasil digenerate! Silakan klik tombol di bawah untuk"
+            " mengunduh file ZIP."
+        )
+        st.download_button(
+            label="📥 Unduh Semua Kartu (ZIP)",
+            data=zip_buffer,
+            file_name="Batch_Mine_Permits.zip",
+            mime="application/zip",
+        )
+
+    except Exception as e:
+      st.error(
+          f"Terjadi kesalahan saat membaca file atau memproses data: {e}"
+      )
