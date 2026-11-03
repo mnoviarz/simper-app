@@ -80,10 +80,10 @@ def generate_sisi_depan(
   draw.text((50, 570), f"{nik}", fill=text_color_dark, font=font_detail)
   draw.text((50, 615), f"{jabatan}", fill=text_color_dark, font=font_detail)
   draw.text(
-      (580, 520), f"{lokasi_alat}", fill=text_color_dark, font=font_box
+      (500, 520), f"{lokasi_alat}", fill=text_color_dark, font=font_box
   )
   draw.text(
-      (260, 715), f"{izin_alat}", fill=text_color_yellow, font=font_izin
+      (200, 715), f"{izin_alat}", fill=text_color_yellow, font=font_izin
   )
   draw.text(
       (90, 1140),
