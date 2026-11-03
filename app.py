@@ -57,7 +57,7 @@ def generate_sisi_depan(
     font_detail = ImageFont.truetype("arial_narrow_7.ttf", 30)
     font_box = ImageFont.truetype("arial_narrow_7.ttf", 55)
     font_izin = ImageFont.truetype("arial_narrow_7.ttf", 30)
-    font_expired = ImageFont.truetype("arial_narrow_7.ttf", 30)
+    font_expired = ImageFont.truetype("arial_narrow_7.ttf", 25)
   except IOError:
     font_detail = ImageFont.load_default()
     font_box = ImageFont.load_default()
@@ -86,9 +86,9 @@ def generate_sisi_depan(
       (200, 715), f"{izin_alat}", fill=text_color_yellow, font=font_izin
   )
   draw.text(
-      (110, 900),
+      (110, 1000),
       f"Expired : {expired_date}",
-      fill=text_color_dark,
+      fill=text_color_white,
       font=font_expired,
   )
 
