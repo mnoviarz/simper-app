@@ -48,7 +48,7 @@ def generate_sisi_depan(
   # Mengatur Font dengan aman (Menggunakan font default PIL jika file .ttf tidak ada di Linux)
   try:
     # Coba gunakan font sistem jika Anda sudah mengunggah file .ttf ke GitHub
-    font_nama = ImageFont.truetype("arialbd.ttf", 55)
+    font_nama = ImageFont.truetype("arialbd.ttf", 100)
     font_detail = ImageFont.truetype("arial.ttf", 30)
     font_box = ImageFont.truetype("arial.ttf", 65)
     font_izin = ImageFont.truetype("arial.ttf", 45)
