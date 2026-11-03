@@ -54,10 +54,10 @@ def generate_sisi_depan(
 
   try:
     # Jika font detail lain belum ada, gunakan font_narrow atau load_default khusus bagian itu
-    font_detail = ImageFont.truetype("arial_narrow_7.ttf", 10)
-    font_box = ImageFont.truetype("arial_narrow_7.ttf", 10)
-    font_izin = ImageFont.truetype("arial_narrow_7.ttf", 10)
-    font_expired = ImageFont.truetype("arial_narrow_7.ttf", 10)
+    font_detail = ImageFont.truetype("arial_narrow_7.ttf", 30)
+    font_box = ImageFont.truetype("arial_narrow_7.ttf", 55)
+    font_izin = ImageFont.truetype("arial_narrow_7.ttf", 30)
+    font_expired = ImageFont.truetype("arial_narrow_7.ttf", 30)
   except IOError:
     font_detail = ImageFont.load_default()
     font_box = ImageFont.load_default()
