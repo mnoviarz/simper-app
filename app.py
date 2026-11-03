@@ -34,7 +34,7 @@ with st.sidebar:
   )
 
 
-# Fungsi untuk memproses Sisi Depan (Menggunakan koordinat yang sudah pas)
+# Fungsi untuk memproses Sisi Depan
 def generate_sisi_depan(
     nama, nik, jabatan, lokasi_alat, izin_alat, expired_date, photo_file
 ):
@@ -45,14 +45,18 @@ def generate_sisi_depan(
 
   draw = ImageDraw.Draw(base_image)
 
+  # Konfigurasi Font (Nama dibuat lebih besar & tebal menggunakan arialbd.ttf)
   try:
-    font_nama = ImageFont.truetype("arial.ttf", 42)
+    font_nama = ImageFont.truetype(
+        "arialbd.ttf", 55
+    )  # Ukuran diperbesar dan tebal (Bold)
     font_detail = ImageFont.truetype("arial.ttf", 30)
     font_box = ImageFont.truetype("arial.ttf", 65)
     font_izin = ImageFont.truetype("arial.ttf", 45)
     font_expired = ImageFont.truetype("arial.ttf", 26)
   except IOError:
-    font_nama = ImageFont.load_default()
+    # Fallback jika file bold tidak ditemukan
+    font_nama = ImageFont.truetype("arial.ttf", 55)
     font_detail = ImageFont.load_default()
     font_box = ImageFont.load_default()
     font_izin = ImageFont.load_default()
@@ -69,9 +73,10 @@ def generate_sisi_depan(
     photo_position = (150, 160)
     base_image.paste(photo, photo_position, photo)
 
+  # Tulis Teks Identitas
   draw.text((50, 500), f"{nama}", fill=text_color_dark, font=font_nama)
-  draw.text((50, 560), f"{nik}", fill=text_color_dark, font=font_detail)
-  draw.text((50, 605), f"{jabatan}", fill=text_color_dark, font=font_detail)
+  draw.text((50, 570), f"{nik}", fill=text_color_dark, font=font_detail)
+  draw.text((50, 615), f"{jabatan}", fill=text_color_dark, font=font_detail)
   draw.text(
       (580, 520), f"{lokasi_alat}", fill=text_color_dark, font=font_box
   )
@@ -93,7 +98,6 @@ def generate_sisi_belakang():
   try:
     base_image = Image.open("template_belakang.png").convert("RGBA")
   except FileNotFoundError:
-    # Cadangan jika file template belakang belum diunggah
     base_image = Image.new("RGBA", (850, 1200), (255, 255, 255, 255))
   return base_image
 
@@ -136,7 +140,6 @@ elif sisi_pilihan == "Sisi Belakang":
   )
 
 else:
-  # Tampilkan Keduanya Sekaligus
   card_depan = generate_sisi_depan(
       nama, nik, jabatan, lokasi_alat, izin_alat, expired_date, uploaded_photo
   )
