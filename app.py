@@ -9,8 +9,8 @@ st.set_page_config(
 
 st.title("🪪 Generator Mine Permit (Sisi Depan)")
 st.write(
-    "Masukkan data karyawan di bawah ini. Ukuran font dan posisi telah disesuaikan"
-    " ulang."
+    "Masukkan data karyawan di bawah ini. Posisi dan ukuran font telah disesuaikan"
+    " pas dengan template."
 )
 
 # Sidebar untuk Input Data
@@ -41,13 +41,13 @@ def generate_sisi_depan(
 
   draw = ImageDraw.Draw(base_image)
 
-  # Konfigurasi Font dengan ukuran yang jauh lebih besar agar jelas
+  # Konfigurasi Font dengan ukuran yang besar dan proporsional
   try:
-    font_nama = ImageFont.truetype("arial.ttf", 75)
-    font_detail = ImageFont.truetype("arial.ttf", 50)
-    font_box = ImageFont.truetype("arial.ttf", 110)
-    font_izin = ImageFont.truetype("arial.ttf", 60)
-    font_expired = ImageFont.truetype("arial.ttf", 45)
+    font_nama = ImageFont.truetype("arial.ttf", 55)
+    font_detail = ImageFont.truetype("arial.ttf", 38)
+    font_box = ImageFont.truetype("arial.ttf", 90)
+    font_izin = ImageFont.truetype("arial.ttf", 50)
+    font_expired = ImageFont.truetype("arial.ttf", 36)
   except IOError:
     font_nama = ImageFont.load_default()
     font_detail = ImageFont.load_default()
@@ -59,32 +59,32 @@ def generate_sisi_depan(
   text_color_yellow = (210, 155, 20)  # Warna kuning untuk izin alat
   text_color_white = (255, 255, 255)  # Warna putih untuk expired
 
-  # 1. Tempel Foto Karyawan
+  # 1. Tempel Foto Karyawan (Sesuai posisi di bawah header MINE PERMIT sebelah kiri)
   if photo_file is not None:
     photo = Image.open(photo_file).convert("RGBA")
-    photo_size = (420, 520)  # Ukuran foto diperbesar
+    photo_size = (350, 430)  # Ukuran foto
     photo = photo.resize(photo_size, Image.Resampling.LANCZOS)
-    photo_position = (220, 240)  # Koordinat (X, Y) foto
+    photo_position = (180, 200)  # Koordinat (X, Y) foto
     base_image.paste(photo, photo_position, photo)
 
-  # 2. Tulis Teks Identitas (Nama, NIK, Jabatan) di bawah foto sebelah kiri
-  draw.text((100, 800), f"{nama}", fill=text_color_dark, font=font_nama)
-  draw.text((100, 895), f"{nik}", fill=text_color_dark, font=font_detail)
-  draw.text((100, 960), f"{jabatan}", fill=text_color_dark, font=font_detail)
+  # 2. Tulis Teks Identitas (Nama, NIK, Jabatan) di bawah foto sebelah kiri (Dinaikkan agar pas)
+  draw.text((80, 650), f"{nama}", fill=text_color_dark, font=font_nama)
+  draw.text((80, 720), f"{nik}", fill=text_color_dark, font=font_detail)
+  draw.text((80, 765), f"{jabatan}", fill=text_color_dark, font=font_detail)
 
   # 3. Tulis Kode Lokasi Alat di Kotak Sebelah Kanan (Contoh: AB)
   draw.text(
-      (880, 820), f"{lokasi_alat}", fill=text_color_dark, font=font_box
+      (750, 680), f"{lokasi_alat}", fill=text_color_dark, font=font_box
   )
 
   # 4. Tulis Keterangan Izin Alat di Dalam Kotak Panjang Tengah
   draw.text(
-      (360, 1145), f"{izin_alat}", fill=text_color_yellow, font=font_izin
+      (350, 930), f"{izin_alat}", fill=text_color_yellow, font=font_izin
   )
 
-  # 5. Tulis Tanggal Expired di Bagian Bawah Area Hijau (Dinaikkan agar tidak terpotong)
+  # 5. Tulis Tanggal Expired di Bagian Bawah Area Hijau
   draw.text(
-      (150, 1520),
+      (120, 1470),
       f"Expired : {expired_date}",
       fill=text_color_white,
       font=font_expired,
