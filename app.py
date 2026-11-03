@@ -67,7 +67,7 @@ def generate_sisi_depan(
   text_color_dark = (20, 20, 20)
   text_color_yellow = (230, 175, 40)
   text_color_white = (255, 255, 255)
-  text_color_green = (34, 139, 34)
+  text_color_green = (35, 115, 110)
 
   if photo_file is not None:
     photo = Image.open(photo_file).convert("RGBA")
