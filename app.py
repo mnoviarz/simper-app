@@ -7,14 +7,20 @@ st.set_page_config(
     page_title="Generator Mine Permit", page_icon="🪪", layout="centered"
 )
 
-st.title("🪪 Generator Mine Permit (Sisi Depan)")
+st.title("🪪 Generator Mine Permit (Depan & Belakang)")
 st.write(
-    "Masukkan data karyawan di bawah ini sesuai dengan format kartu Mine Permit."
+    "Masukkan data karyawan di bawah ini, lalu pilih sisi kartu yang ingin"
+    " ditampilkan atau diunduh."
 )
 
-# Sidebar untuk Input Data
+# Sidebar untuk Input Data & Pilihan Sisi Kartu
 with st.sidebar:
-  st.header("Input Data Karyawan")
+  st.header("1. Pilih Tampilan")
+  sisi_pilihan = st.radio(
+      "Tampilkan Sisi:", ("Sisi Depan", "Sisi Belakang", "Tampilkan Keduanya")
+  )
+
+  st.header("2. Input Data Karyawan")
   nama = st.text_input("Nama Lengkap", "Maikel Pandori")
   nik = st.text_input("NIP / No. Induk", "MN-PTBSA 0002")
   jabatan = st.text_input("Jabatan / Role", "DRIVER")
@@ -22,26 +28,23 @@ with st.sidebar:
   izin_alat = st.text_input("Izin Op. Alat", "Light Vehicle ( LV )")
   expired_date = st.text_input("Masa Berlaku (Expired)", "19 Oktober 2027")
 
-  st.header("Upload Foto")
+  st.header("3. Upload Foto")
   uploaded_photo = st.file_uploader(
       "Pilih Foto (JPG/PNG)", type=["jpg", "jpeg", "png"]
   )
 
 
-# Fungsi untuk memproses Sisi Depan
+# Fungsi untuk memproses Sisi Depan (Menggunakan koordinat yang sudah pas)
 def generate_sisi_depan(
     nama, nik, jabatan, lokasi_alat, izin_alat, expired_date, photo_file
 ):
   try:
-    # Pastikan file template depan portrait Anda bernama 'template_depan.png'
     base_image = Image.open("template_depan.png").convert("RGBA")
   except FileNotFoundError:
-    # Ukuran default cadangan jika file belum ada (Resolusi portrait standar)
     base_image = Image.new("RGBA", (850, 1200), (255, 255, 255, 255))
 
   draw = ImageDraw.Draw(base_image)
 
-  # Konfigurasi Font (Menggunakan default atau kustom ttf jika ada)
   try:
     font_nama = ImageFont.truetype("arial.ttf", 42)
     font_detail = ImageFont.truetype("arial.ttf", 30)
@@ -55,37 +58,26 @@ def generate_sisi_depan(
     font_izin = ImageFont.load_default()
     font_expired = ImageFont.load_default()
 
-  text_color_dark = (20, 20, 20)  # Warna teks gelap
-  text_color_yellow = (230, 175, 40)  # Warna teks kuning untuk izin alat
-  text_color_white = (255, 255, 255)  # Warna teks putih untuk expired
+  text_color_dark = (20, 20, 20)
+  text_color_yellow = (230, 175, 40)
+  text_color_white = (255, 255, 255)
 
-  # 1. Tempel Foto Karyawan (Sesuaikan koordinat X, Y dan ukuran foto)
   if photo_file is not None:
     photo = Image.open(photo_file).convert("RGBA")
-    photo_size = (
-        280,
-        350,
-    )  # Ukuran kotak foto disesuaikan dengan proporsi contoh
+    photo_size = (280, 350)
     photo = photo.resize(photo_size, Image.Resampling.LANCZOS)
-    photo_position = (150, 160)  # Titik koordinat (X, Y) posisi foto
+    photo_position = (150, 160)
     base_image.paste(photo, photo_position, photo)
 
-  # 2. Tulis Teks Identitas di Sisi Kiri Bawah Foto
   draw.text((50, 500), f"{nama}", fill=text_color_dark, font=font_nama)
   draw.text((50, 560), f"{nik}", fill=text_color_dark, font=font_detail)
   draw.text((50, 605), f"{jabatan}", fill=text_color_dark, font=font_detail)
-
-  # 3. Tulis Kode Lokasi Alat di Kotak Sebelah Kanan (Contoh: AB)
   draw.text(
       (580, 520), f"{lokasi_alat}", fill=text_color_dark, font=font_box
   )
-
-  # 4. Tulis Keterangan Izin Alat di Dalam Kotak Panjang Tengah
   draw.text(
       (260, 715), f"{izin_alat}", fill=text_color_yellow, font=font_izin
   )
-
-  # 5. Tulis Tanggal Expired di Bagian Bawah Area Hijau
   draw.text(
       (90, 1140),
       f"Expired : {expired_date}",
@@ -96,22 +88,65 @@ def generate_sisi_depan(
   return base_image
 
 
+# Fungsi untuk memproses Sisi Belakang
+def generate_sisi_belakang():
+  try:
+    base_image = Image.open("template_belakang.png").convert("RGBA")
+  except FileNotFoundError:
+    # Cadangan jika file template belakang belum diunggah
+    base_image = Image.new("RGBA", (850, 1200), (255, 255, 255, 255))
+  return base_image
+
+
 # --- TAMPILAN UTAMA APLIKASI ---
 st.subheader("Pratinjau Mine Permit")
 
-final_card = generate_sisi_depan(
-    nama, nik, jabatan, lokasi_alat, izin_alat, expired_date, uploaded_photo
-)
-st.image(
-    final_card, caption="Pratinjau Mine Permit (Depan)", use_container_width=True
-)
+if sisi_pilihan == "Sisi Depan":
+  final_card = generate_sisi_depan(
+      nama, nik, jabatan, lokasi_alat, izin_alat, expired_date, uploaded_photo
+  )
+  st.image(
+      final_card, caption="Pratinjau Mine Permit (Depan)", use_container_width=True
+  )
 
-# Tombol Unduh
-buffered = io.BytesIO()
-final_card.convert("RGB").save(buffered, format="PNG")
-st.download_button(
-    label="📥 Unduh Mine Permit (PNG)",
-    data=buffered.getvalue(),
-    file_name=f"MinePermit_{nik}.png",
-    mime="image/png",
-)
+  buffered = io.BytesIO()
+  final_card.convert("RGB").save(buffered, format="PNG")
+  st.download_button(
+      label="📥 Unduh Sisi Depan (PNG)",
+      data=buffered.getvalue(),
+      file_name=f"MinePermit_Depan_{nik}.png",
+      mime="image/png",
+  )
+
+elif sisi_pilihan == "Sisi Belakang":
+  final_card = generate_sisi_belakang()
+  st.image(
+      final_card,
+      caption="Pratinjau Mine Permit (Belakang)",
+      use_container_width=True,
+  )
+
+  buffered = io.BytesIO()
+  final_card.convert("RGB").save(buffered, format="PNG")
+  st.download_button(
+      label="📥 Unduh Sisi Belakang (PNG)",
+      data=buffered.getvalue(),
+      file_name="MinePermit_Belakang.png",
+      mime="image/png",
+  )
+
+else:
+  # Tampilkan Keduanya Sekaligus
+  card_depan = generate_sisi_depan(
+      nama, nik, jabatan, lokasi_alat, izin_alat, expired_date, uploaded_photo
+  )
+  card_belakang = generate_sisi_belakang()
+
+  st.image(
+      card_depan, caption="Pratinjau Mine Permit (Depan)", use_container_width=True
+  )
+  st.image(
+      card_belakang,
+      caption="Pratinjau Mine Permit (Belakang)",
+      use_container_width=True,
+  )
