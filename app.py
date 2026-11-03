@@ -48,7 +48,7 @@ def generate_sisi_depan(
   # Mengatur Font dengan aman (Menggunakan font default PIL jika file .ttf tidak ada di Linux)
 # Konfigurasi Font secara aman per baris agar tidak saling memengaruhi error
   try:
-    font_nama = ImageFont.truetype("arial_narrow_7.ttf", 100)
+    font_nama = ImageFont.truetype("arial_narrow_7.ttf", 55)
   except IOError:
     font_nama = ImageFont.load_default()
 
