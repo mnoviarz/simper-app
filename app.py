@@ -71,9 +71,9 @@ def generate_sisi_depan(
 
   if photo_file is not None:
     photo = Image.open(photo_file).convert("RGBA")
-    photo_size = (100, 200)
+    photo_size = (200, 300)
     photo = photo.resize(photo_size, Image.Resampling.LANCZOS)
-    photo_position = (50, 200)
+    photo_position = (100, 200)
     base_image.paste(photo, photo_position, photo)
 
   # Tulis Teks Identitas
