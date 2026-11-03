@@ -67,6 +67,7 @@ def generate_sisi_depan(
   text_color_dark = (20, 20, 20)
   text_color_yellow = (230, 175, 40)
   text_color_white = (255, 255, 255)
+  text_color_green = (34, 139, 34)
 
   if photo_file is not None:
     photo = Image.open(photo_file).convert("RGBA")
@@ -80,7 +81,7 @@ def generate_sisi_depan(
   draw.text((50, 570), f"{nik}", fill=text_color_dark, font=font_detail)
   draw.text((50, 615), f"{jabatan}", fill=text_color_dark, font=font_detail)
   draw.text(
-      (500, 520), f"{lokasi_alat}", fill=text_color_dark, font=font_box
+      (500, 520), f"{lokasi_alat}", fill=text_color_green, font=font_box
   )
   draw.text(
       (200, 715), f"{izin_alat}", fill=text_color_yellow, font=font_izin
