@@ -46,16 +46,19 @@ def generate_sisi_depan(
   draw = ImageDraw.Draw(base_image)
 
   # Mengatur Font dengan aman (Menggunakan font default PIL jika file .ttf tidak ada di Linux)
+# Konfigurasi Font secara aman per baris agar tidak saling memengaruhi error
   try:
-    # Coba gunakan font sistem jika Anda sudah mengunggah file .ttf ke GitHub
     font_nama = ImageFont.truetype("arial_narrow_7.ttf", 100)
-    font_detail = ImageFont.truetype("arial.ttf", 30)
-    font_box = ImageFont.truetype("arial.ttf", 65)
-    font_izin = ImageFont.truetype("arial.ttf", 45)
-    font_expired = ImageFont.truetype("arial.ttf", 26)
   except IOError:
-    # Fallback otomatis ke font bawaan PIL agar tidak pernah error di Streamlit Cloud
     font_nama = ImageFont.load_default()
+
+  try:
+    # Jika font detail lain belum ada, gunakan font_narrow atau load_default khusus bagian itu
+    font_detail = ImageFont.truetype("arial_narrow_7.ttf", 35)
+    font_box = ImageFont.truetype("arial_narrow_7.ttf", 65)
+    font_izin = ImageFont.truetype("arial_narrow_7.ttf", 45)
+    font_expired = ImageFont.truetype("arial_narrow_7.ttf", 30)
+  except IOError:
     font_detail = ImageFont.load_default()
     font_box = ImageFont.load_default()
     font_izin = ImageFont.load_default()
