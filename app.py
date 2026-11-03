@@ -86,8 +86,8 @@ def generate_sisi_depan(
       (200, 715), f"{izin_alat}", fill=text_color_yellow, font=font_izin
   )
   draw.text(
-      (150, 950),
-      f"Expired : {expired_date}",
+      (150, 980),
+      f" {expired_date}",
       fill=text_color_white,
       font=font_expired,
   )
