@@ -15,7 +15,7 @@ st.write(
     " Excel/CSV."
 )
 
-# Sidebar untuk Mode Input & Pengaturan
+# Sidebar untuk Input Data & Pengaturan
 with st.sidebar:
   st.header("1. Pilih Mode Pembuatan")
   mode = st.radio("Mode:", ("Input Satuan", "Input Massal (Excel/CSV)"))
@@ -25,15 +25,27 @@ with st.sidebar:
       "Tampilkan Sisi:", ("Sisi Depan", "Sisi Belakang", "Tampilkan Keduanya")
   )
 
-  st.header("3. Upload Foto Utama")
+  st.header("3. Pengaturan Cetak")
+  tampilkan_garis_potong = st.checkbox(
+      "Tampilkan Garis Potong (Cutting Guide)", value=False
+  )
+
+  st.header("4. Upload Foto Utama")
   uploaded_photo = st.file_uploader(
       "Pilih Foto (JPG/PNG)", type=["jpg", "jpeg", "png"]
   )
 
 
-# Fungsi untuk memproses Sisi Depan (Menggunakan koordinat stabil Anda)
+# Fungsi untuk memproses Sisi Depan
 def generate_sisi_depan(
-    nama, nik, jabatan, lokasi_alat, izin_alat, expired_date, photo_file
+    nama,
+    nik,
+    jabatan,
+    lokasi_alat,
+    izin_alat,
+    expired_date,
+    photo_file,
+    tampilkan_garis_potong=False,
 ):
   try:
     base_image = Image.open("template_depan.png").convert("RGBA")
@@ -74,7 +86,7 @@ def generate_sisi_depan(
     except Exception:
       pass
 
-  # Tulis Teks Identitas (Koordinat Sesuai Pilihan Anda)
+  # Tulis Teks Identitas
   draw.text((50, 500), f"{nama}", fill=text_color_dark, font=font_nama)
   draw.text((50, 570), f"{nik}", fill=text_color_dark, font=font_detail)
   draw.text((50, 615), f"{jabatan}", fill=text_color_dark, font=font_detail)
@@ -91,15 +103,32 @@ def generate_sisi_depan(
       font=font_expired,
   )
 
+  # Tambahkan Garis Potong (Cutting Guide) jika dicentang di sidebar
+  if tampilkan_garis_potong:
+    draw.rectangle(
+        [0, 0, base_image.width - 1, base_image.height - 1],
+        outline=(150, 150, 150),
+        width=2,
+    )
+
   return base_image
 
 
 # Fungsi untuk memproses Sisi Belakang
-def generate_sisi_belakang():
+def generate_sisi_belakang(tampilkan_garis_potong=False):
   try:
     base_image = Image.open("template_belakang.png").convert("RGBA")
   except FileNotFoundError:
     base_image = Image.new("RGBA", (850, 1200), (255, 255, 255, 255))
+
+  if tampilkan_garis_potong:
+    draw = ImageDraw.Draw(base_image)
+    draw.rectangle(
+        [0, 0, base_image.width - 1, base_image.height - 1],
+        outline=(150, 150, 150),
+        width=2,
+    )
+
   return base_image
 
 
@@ -128,6 +157,7 @@ if mode == "Input Satuan":
         izin_alat,
         expired_date,
         uploaded_photo,
+        tampilkan_garis_potong,
     )
     st.image(
         final_card, caption="Pratinjau Mine Permit (Depan)", use_container_width=True
@@ -143,7 +173,7 @@ if mode == "Input Satuan":
     )
 
   elif sisi_pilihan == "Sisi Belakang":
-    final_card = generate_sisi_belakang()
+    final_card = generate_sisi_belakang(tampilkan_garis_potong)
     st.image(
         final_card,
         caption="Pratinjau Mine Permit (Belakang)",
@@ -168,8 +198,9 @@ if mode == "Input Satuan":
         izin_alat,
         expired_date,
         uploaded_photo,
+        tampilkan_garis_potong,
     )
-    card_belakang = generate_sisi_belakang()
+    card_belakang = generate_sisi_belakang(tampilkan_garis_potong)
 
     st.image(
         card_depan, caption="Pratinjau Mine Permit (Depan)", use_container_width=True
@@ -236,6 +267,7 @@ else:
                 p_izin,
                 p_expired,
                 uploaded_photo,
+                tampilkan_garis_potong,
             )
             img_io_d = io.BytesIO()
             card_d.convert("RGB").save(img_io_d, format="PNG")
@@ -245,7 +277,7 @@ else:
             )
 
             # Buat Sisi Belakang
-            card_b = generate_sisi_belakang()
+            card_b = generate_sisi_belakang(tampilkan_garis_potong)
             img_io_b = io.BytesIO()
             card_b.convert("RGB").save(img_io_b, format="PNG")
             zip_file.writestr(
